@@ -11,7 +11,7 @@ bl_info = {
     "location": "Output Properties > Render Output Snippets",
     "description": "Set output render path to varios snippets predefined",
     "warning": "",
-    "wiki_url": "",
+    "wiki_url": "https://github.com/leokaze/BlenderAddonsAndTools",
     "tracker_url": "",
     "category": "Render"}
 

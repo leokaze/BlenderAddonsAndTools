@@ -12,7 +12,7 @@ bl_info = {
   "blender": (3, 0, 0),
   "location": "Output Properties > Batch Code",
   "warning": "This addon is still in development. Is needed install pyperclip on on current blender python folder",
-  "wiki_url": "",
+  "wiki_url": "https://github.com/leokaze/BlenderAddonsAndTools",
   "category": "Render" }
 
 class RenderBatchCodeProps(bpy.types.PropertyGroup):

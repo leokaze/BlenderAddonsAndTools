@@ -8,7 +8,7 @@ bl_info = {
   "blender": (3, 0, 0),
   "location": "Output Properties > Render Format Presets",
   "warning": "This addon is still in development.",
-  "wiki_url": "",
+  "wiki_url": "https://github.com/leokaze/BlenderAddonsAndTools",
   "category": "Render" }
 
 def SetRenderFormat(formato):
