@@ -1,7 +1,8 @@
-from ntpath import join
+# from ntpath import join
 from bpy.props import BoolProperty, StringProperty, PointerProperty
 import os
 import bpy
+
 bl_info = {
     "name": "Render Output Snippets",
     "author": "leokaze",
