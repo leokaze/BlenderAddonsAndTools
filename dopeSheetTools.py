@@ -4,7 +4,7 @@ bl_info = {
   "name": "Dope Sheet Tools",
   "description": "Tools to manipulate filters and fcurves",
   "author": "leokaze",
-  "version": (0, 0, 1),
+  "version": (0, 0, 2),
   "blender": (3, 0, 0),
   "location": "Dope Sheet and Graph Editor",
   "warning": "This addon is still in development.",
@@ -26,6 +26,28 @@ class FastFilterFCurvesOP(bpy.types.Operator):
   def execute(self, context):
     bpy.context.space_data.dopesheet.filter_text = self.filtro
     return {"FINISHED"}
+
+class FrameJumpsOP(bpy.types.Operator):
+  bl_idname = "framejumps.animation_tools"
+  bl_label = "Frame Jumps"
+  bl_description = "Various frame jumps most used in animation."
+  bl_options = {"REGISTER"}
+
+  jump: bpy.props.IntProperty(name="jump", default=9)
+
+  @classmethod
+  def poll(cls, context):
+    return True
+
+  def execute(self, context):
+    jump = self.jump
+    if(jump > 0):
+      jump = bpy.context.scene.frame_current + jump - 1
+    else:
+      jump = bpy.context.scene.frame_current + jump + 1
+    bpy.context.scene.frame_set(jump)
+    return {"FINISHED"}
+
 
 class PanelDopesheetFastFilterFcurves(bpy.types.Panel):
   bl_idname = "FASTFILTER_PT_dopesheet_panel"
@@ -68,6 +90,44 @@ class PanelDopesheetFastFilterFcurves(bpy.types.Panel):
     row.operator("fastfilter.fcurves_filter", text="X").filtro = "X Scale"
     row.operator("fastfilter.fcurves_filter", text="Y").filtro = "Y Scale"
     row.operator("fastfilter.fcurves_filter", text="Z").filtro = "Z Scale"
+    
+
+class PanelDopesheetFrameJump(bpy.types.Panel):
+  bl_idname = "FRAMEJUMPS_PT_dopesheet_panel"
+  bl_label = "Frame jumps"
+  bl_space_type = "DOPESHEET_EDITOR"
+  bl_region_type = "UI"
+  bl_category = "Tools"
+
+  def draw(self, context):
+    layout = self.layout
+
+    layout.use_property_decorate = False
+    layout.use_property_split = True
+
+    row = layout.row(align=True)
+    row.operator("framejumps.animation_tools", text="-3").jump = -3
+    row.operator("framejumps.animation_tools", text="+3").jump = 3
+
+    row = layout.row(align=True)
+    row.operator("framejumps.animation_tools", text="-5").jump = -5
+    row.operator("framejumps.animation_tools", text="+5").jump = 5
+
+    row = layout.row(align=True)
+    row.operator("framejumps.animation_tools", text="-7").jump = -7
+    row.operator("framejumps.animation_tools", text="+7").jump = 7
+
+    row = layout.row(align=True)
+    row.operator("framejumps.animation_tools", text="-9").jump = -9
+    row.operator("framejumps.animation_tools", text="+9").jump = 9
+
+    row = layout.row(align=True)
+    row.operator("framejumps.animation_tools", text="-11").jump = -11
+    row.operator("framejumps.animation_tools", text="+11").jump = 11
+
+    row = layout.row(align=True)
+    row.operator("framejumps.animation_tools", text="-13").jump = -13
+    row.operator("framejumps.animation_tools", text="+13").jump = 13
     
 
 class PanelGraphFastFilterFcurves(bpy.types.Panel):
@@ -124,6 +184,8 @@ def register():
   bpy.utils.register_class(FastFilterFCurvesOP)
   bpy.utils.register_class(PanelDopesheetFastFilterFcurves)
   bpy.utils.register_class(PanelGraphFastFilterFcurves)
+  bpy.utils.register_class(FrameJumpsOP)
+  bpy.utils.register_class(PanelDopesheetFrameJump)
   bpy.types.DOPESHEET_HT_header.append(menu_func)
   bpy.types.GRAPH_HT_header.append(menu_func)
 
@@ -131,6 +193,8 @@ def unregister():
   bpy.utils.unregister_class(FastFilterFCurvesOP)
   bpy.utils.unregister_class(PanelDopesheetFastFilterFcurves)
   bpy.utils.unregister_class(PanelGraphFastFilterFcurves)
+  bpy.utils.unregister_class(FrameJumpsOP)
+  bpy.utils.unregister_class(PanelDopesheetFrameJump)
   bpy.types.DOPESHEET_HT_header.remove(menu_func)
   bpy.types.GRAPH_HT_header.remove(menu_func)
 
