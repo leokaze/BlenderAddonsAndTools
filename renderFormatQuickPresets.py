@@ -16,11 +16,15 @@ def SetRenderFormat(formato):
     bpy.context.scene.render.image_settings.file_format = 'JPEG'
     bpy.context.scene.render.image_settings.color_mode = 'RGB'
     bpy.context.scene.render.image_settings.quality = 90
+    bpy.context.scene.render.film_transparent = False
   elif(formato == "png"):
     bpy.context.scene.render.image_settings.file_format = 'PNG'
     bpy.context.scene.render.image_settings.color_mode = 'RGBA'
     bpy.context.scene.render.image_settings.color_depth = '8'
     bpy.context.scene.render.image_settings.compression = 15
+    bpy.context.scene.render.film_transparent = True
+    bpy.context.scene.cycles.film_transparent_glass = True
+
   elif(formato == "mp4"):
     bpy.context.scene.render.image_settings.file_format = 'FFMPEG'
     bpy.context.scene.render.ffmpeg.format = 'MPEG4'
@@ -28,11 +32,15 @@ def SetRenderFormat(formato):
     bpy.context.scene.render.ffmpeg.constant_rate_factor = 'MEDIUM'
     bpy.context.scene.render.ffmpeg.ffmpeg_preset = 'GOOD'
     bpy.context.scene.render.ffmpeg.gopsize = 18
+    bpy.context.scene.render.film_transparent = False
   elif(formato == "exr"):
-    bpy.context.scene.render.image_settings.file_format = 'OPEN_EXR'
+    bpy.context.scene.render.image_settings.file_format = 'OPEN_EXR_MULTILAYER'
     bpy.context.scene.render.image_settings.color_mode = 'RGBA'
     bpy.context.scene.render.image_settings.color_depth = '16'
     bpy.context.scene.render.image_settings.exr_codec = 'ZIP'
+    bpy.context.scene.render.film_transparent = True
+    bpy.context.scene.cycles.film_transparent_glass = True
+
 
 class RenderFormatPresetOperator(bpy.types.Operator):
   bl_idname = "set_format.render_format_presets_operator"

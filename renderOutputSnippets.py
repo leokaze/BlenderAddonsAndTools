@@ -19,7 +19,10 @@ def GetPath(context):
     props = context.scene.render_output_snippets_props
 
     fileName = (os.path.basename(bpy.data.filepath))
-    dotIndex = fileName.rindex(".")
+    try:
+        dotIndex = fileName.rindex(".")
+    except:
+        return "//"
     fileName = fileName[:dotIndex]
 
     sceneName = bpy.context.scene.name
