@@ -6,7 +6,7 @@ import bpy
 bl_info = {
     "name": "Render Output Snippets",
     "author": "leokaze",
-    "version": (0, 2),
+    "version": (0, 3),
     "blender": (3, 0, 0),
     "location": "Output Properties > Render Output Snippets",
     "description": "Set output render path to varios snippets predefined",
@@ -22,7 +22,7 @@ def GetPath(context):
     try:
         dotIndex = fileName.rindex(".")
     except:
-        return "//"
+        return "//..\\SaveYourProjectFirst\\"
     fileName = fileName[:dotIndex]
 
     sceneName = bpy.context.scene.name
@@ -120,7 +120,12 @@ class RenderOutputSnippetsPanel(bpy.types.Panel):
                      text="Set Path")
 
         col = layout.column(align=True, heading="Preview path")
-        col.label(text="Path: " + GetPath(context))
+        col.label(text="PREVIEW")
+        col.label(text="- " + GetPath(context))
+
+        col = layout.column(align=True, heading="Current path")
+        col.label(text="CURRENT")
+        col.label(text="- " + bpy.context.scene.render.filepath)
 
 
 class RenderOutputSnippetsProps(bpy.types.PropertyGroup):
@@ -137,7 +142,7 @@ class RenderOutputSnippetsProps(bpy.types.PropertyGroup):
     customName:     BoolProperty(
         name="", description="Use custom folder", default=False)
     customFolder:   StringProperty(
-        name="", description="folder name", default="MyFolder", maxlen=0)
+        name="", description="folder name", default="Preview", maxlen=0)
     folderPath:   StringProperty(
         name="Folder Path", description="Custom folder path", default="//..\\render\\", maxlen=1024, subtype="DIR_PATH")
 
@@ -154,7 +159,7 @@ class RenderOutputSnippetsProps(bpy.types.PropertyGroup):
     fseparatorEnd:     BoolProperty(
         name="", description="Use separator at end of file name", default=True)
     fcustomFileName:   StringProperty(
-        name="", description="file name", default="MyRender", maxlen=0)
+        name="", description="file name", default="Preview", maxlen=0)
     fseparator:   StringProperty(
         name="", description="file name Separator Simbol", default="_", maxlen=0)
 

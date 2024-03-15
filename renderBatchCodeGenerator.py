@@ -1,6 +1,5 @@
 import bpy
 from bpy import context
-import pyperclip
 from bpy.props import BoolProperty, StringProperty, PointerProperty
 import os
 
@@ -8,7 +7,7 @@ bl_info = {
   "name": "Render Batch Code Generator",
   "description": "Create file for render or copy de current project to batch code and send it to clipboard",
   "author": "leokaze",
-  "version": (0, 0, 1),
+  "version": (0, 0, 3),
   "blender": (3, 0, 0),
   "location": "Output Properties > Batch Code",
   "warning": "This addon is still in development. Is needed install pyperclip on on current blender python folder",
@@ -64,7 +63,7 @@ class RenderBatchCodeProps(bpy.types.PropertyGroup):
   startFrame: StringProperty(
     name="Start frame",
     description="Start frame to render",
-    default="0"
+    default="1"
   )
   endFrame: StringProperty(
     name="End frame",
@@ -138,8 +137,7 @@ class CopyProjectBatchCodeOperator(bpy.types.Operator):
 
   def execute(self, context):
     code = GetBatchCode(context)
-    pyperclip.copy(code)
-    self.report({'INFO'}, "batch code is copy to clipboard!")
+    self.report({'INFO'}, "No longer available!")
     return {"FINISHED"}
 
 class SaveRenderBatchFileOperator(bpy.types.Operator):

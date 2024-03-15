@@ -25,7 +25,27 @@ class FastFilterFCurvesOP(bpy.types.Operator):
 
   def execute(self, context):
     bpy.context.space_data.dopesheet.filter_text = self.filtro
+    if context.area.type == 'GRAPH_EDITOR':
+      bpy.ops.graph.view_all()
     return {"FINISHED"}
+  
+
+class SetKeyFrameTypeOP(bpy.types.Operator):
+  bl_idname = "keyframetype.dopesheet_tools"
+  bl_label = "Set Keyframe type"
+  bl_description = "Tool for fast set keyframe type"
+  bl_options = {"REGISTER"}
+
+  type: bpy.props.StringProperty(name="type", default="KEYFRAME")
+
+  @classmethod
+  def poll(cls, context):
+    return True
+
+  def execute(self, context):
+    bpy.context.scene.tool_settings.keyframe_type = self.type
+    return {"FINISHED"}
+
 
 class FrameJumpsOP(bpy.types.Operator):
   bl_idname = "framejumps.animation_tools"
@@ -128,6 +148,10 @@ class PanelDopesheetFrameJump(bpy.types.Panel):
     row = layout.row(align=True)
     row.operator("framejumps.animation_tools", text="-13").jump = -13
     row.operator("framejumps.animation_tools", text="+13").jump = 13
+
+    row = layout.row(align=True)
+    row.operator("framejumps.animation_tools", text="-17").jump = -17
+    row.operator("framejumps.animation_tools", text="+17").jump = 17
     
 
 class PanelGraphFastFilterFcurves(bpy.types.Panel):
@@ -178,10 +202,16 @@ def menu_func(self, context):
   row.operator("fastfilter.fcurves_filter", text="", icon="ORIENTATION_GLOBAL").filtro = "Location"
   row.operator("fastfilter.fcurves_filter", text="", icon="ORIENTATION_GIMBAL").filtro = "Rotation"
   row.operator("fastfilter.fcurves_filter", text="", icon="CON_SIZELIKE").filtro = "Scale"
+  row.operator("keyframetype.dopesheet_tools", text="", icon="KEYTYPE_KEYFRAME_VEC").type = "KEYFRAME"
+  row.operator("keyframetype.dopesheet_tools", text="", icon="KEYTYPE_BREAKDOWN_VEC").type = "BREAKDOWN"
+  row.operator("keyframetype.dopesheet_tools", text="", icon="KEYTYPE_MOVING_HOLD_VEC").type = "MOVING_HOLD"
+  row.operator("keyframetype.dopesheet_tools", text="", icon="KEYTYPE_EXTREME_VEC").type = "EXTREME"
+  row.operator("keyframetype.dopesheet_tools", text="", icon="KEYTYPE_JITTER_VEC").type = "JITTER"
 
 
 def register():
   bpy.utils.register_class(FastFilterFCurvesOP)
+  bpy.utils.register_class(SetKeyFrameTypeOP)
   bpy.utils.register_class(PanelDopesheetFastFilterFcurves)
   bpy.utils.register_class(PanelGraphFastFilterFcurves)
   bpy.utils.register_class(FrameJumpsOP)
@@ -191,6 +221,7 @@ def register():
 
 def unregister():
   bpy.utils.unregister_class(FastFilterFCurvesOP)
+  bpy.utils.unregister_class(SetKeyFrameTypeOP)
   bpy.utils.unregister_class(PanelDopesheetFastFilterFcurves)
   bpy.utils.unregister_class(PanelGraphFastFilterFcurves)
   bpy.utils.unregister_class(FrameJumpsOP)
