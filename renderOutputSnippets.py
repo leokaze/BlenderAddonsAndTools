@@ -6,7 +6,7 @@ import bpy
 bl_info = {
     "name": "Render Output Snippets",
     "author": "leokaze",
-    "version": (0, 3),
+    "version": (0, 4),
     "blender": (3, 0, 0),
     "location": "Output Properties > Render Output Snippets",
     "description": "Set output render path to varios snippets predefined",
@@ -14,6 +14,17 @@ bl_info = {
     "wiki_url": "https://github.com/leokaze/BlenderAddonsAndTools",
     "tracker_url": "",
     "category": "Render"}
+
+def GetFileName():
+    fileName = (os.path.basename(bpy.data.filepath))
+    try:
+        dotIndex = fileName.rindex(".")
+    except:
+        return "Project-Unsaved"
+    fileName = fileName[:dotIndex]
+    # replaces underscores with - to avoid problems with the file name
+    fileName = fileName.replace("_", "-")
+    return fileName
 
 def GetPath(context):
     props = context.scene.render_output_snippets_props
@@ -73,7 +84,35 @@ class RenderOutputSnippetsOperator(bpy.types.Operator):
     bl_options = {'REGISTER'}
 
     def execute(self, context):
+        props = context.scene.render_output_snippets_props
         bpy.context.scene.render.filepath = GetPath(context)
+
+        if(props.viewMetadata):
+            context.scene.render.use_stamp_date = False
+            context.scene.render.use_stamp_time = False
+            context.scene.render.use_stamp_render_time = False
+            context.scene.render.use_stamp_frame = True
+            context.scene.render.use_stamp_frame_range = False
+            context.scene.render.use_stamp_memory = False
+            context.scene.render.use_stamp_hostname = False
+            context.scene.render.use_stamp_camera = True
+            context.scene.render.use_stamp_lens = False
+
+            if(len(bpy.data.scenes) > 1):
+                context.scene.render.use_stamp_scene = True
+            else:
+                context.scene.render.use_stamp_scene = False
+
+            context.scene.render.use_stamp_marker = False
+            context.scene.render.use_stamp_filename = False
+            context.scene.render.use_stamp_sequencer_strip = False
+            context.scene.render.use_stamp_note = True
+            context.scene.render.stamp_note_text = GetFileName()
+            context.scene.render.use_stamp = True
+            context.scene.render.stamp_font_size = 30
+            context.scene.render.stamp_foreground = (1, 1, 1, 1)
+            context.scene.render.stamp_background = (0, 0, 0, 0.8)
+
         self.report({'INFO'}, "Path seted")
         return {'FINISHED'}
 
@@ -115,6 +154,9 @@ class RenderOutputSnippetsPanel(bpy.types.Panel):
         col.prop(props, 'fcustomFileName', text='File Name')
         col.prop(props, 'fseparator', text='File name separator')
 
+        col = layout.column(align=True, heading="View Metadata")
+        col.prop(props, 'viewMetadata', text='')
+
         col = layout.column(align=True)
         col.operator("leo_tools.render_output_snippets_operator",
                      text="Set Path")
@@ -126,6 +168,8 @@ class RenderOutputSnippetsPanel(bpy.types.Panel):
         col = layout.column(align=True, heading="Current path")
         col.label(text="CURRENT")
         col.label(text="- " + bpy.context.scene.render.filepath)
+
+
 
 
 class RenderOutputSnippetsProps(bpy.types.PropertyGroup):
@@ -162,6 +206,9 @@ class RenderOutputSnippetsProps(bpy.types.PropertyGroup):
         name="", description="file name", default="Preview", maxlen=0)
     fseparator:   StringProperty(
         name="", description="file name Separator Simbol", default="_", maxlen=0)
+    
+    viewMetadata:  BoolProperty(
+        name="", description="View Metadata", default=False)
 
 
 def register():
