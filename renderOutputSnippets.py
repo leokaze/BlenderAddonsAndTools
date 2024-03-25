@@ -112,6 +112,8 @@ class RenderOutputSnippetsOperator(bpy.types.Operator):
             context.scene.render.stamp_font_size = 30
             context.scene.render.stamp_foreground = (1, 1, 1, 1)
             context.scene.render.stamp_background = (0, 0, 0, 0.8)
+        else:
+            context.scene.render.use_stamp = False
 
         self.report({'INFO'}, "Path seted")
         return {'FINISHED'}
