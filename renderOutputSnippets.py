@@ -39,6 +39,7 @@ def GetPath(context):
     sceneName = bpy.context.scene.name
     layerName = bpy.context.view_layer.name
     cameraName = "NoCamera" if bpy.context.scene.camera == None else bpy.context.scene.camera.name
+    activeCollectionName = bpy.context.view_layer.active_layer_collection.name
 
 
     renderPath = props.folderPath
@@ -54,6 +55,8 @@ def GetPath(context):
         renderPath += "\\" + layerName
     if(props.cameraName):
         renderPath += "\\" + cameraName
+    if(props.collectionName):
+        renderPath += "\\" + activeCollectionName
     if(props.customName):
         renderPath += "\\" + props.customFolder
 
@@ -65,6 +68,8 @@ def GetPath(context):
         renderName += layerName if len(renderName) == 0 else props.fseparator + layerName
     if(props.fcameraName):
         renderName += cameraName if len(renderName) == 0 else props.fseparator + cameraName
+    if(props.fcollectionName):
+        renderName += activeCollectionName if len(renderName) == 0 else props.fseparator + activeCollectionName
     if(props.fcustomName):
         renderName += props.fcustomFileName if len(renderName) == 0 else props.fseparator + props.fcustomFileName
     if(props.fseparatorEnd):
@@ -139,6 +144,7 @@ class RenderOutputSnippetsPanel(bpy.types.Panel):
         col.prop(props, 'sceneName', text='Scene Name')
         col.prop(props, 'layerName', text='Layer Name')
         col.prop(props, 'cameraName', text='Active Camera Name')
+        col.prop(props, 'collectionName', text='Active Collection Name')
         col.prop(props, 'customName', text='Custom Folder')
 
         col = layout.column(align=True, heading="File Name to use")
@@ -147,6 +153,7 @@ class RenderOutputSnippetsPanel(bpy.types.Panel):
         col.prop(props, 'flayerName', text='Layer Name')
         col.prop(props, 'fcameraName', text='Active Camera Name')
         col.prop(props, 'fcustomName', text='Custom Name')
+        col.prop(props, 'fcollectionName', text='Active Collection Name')
         col.prop(props, 'fseparatorEnd', text='Use separator at End')
 
         col = layout.column(align=True, heading="Custom Paths")
@@ -185,6 +192,8 @@ class RenderOutputSnippetsProps(bpy.types.PropertyGroup):
         name="", description="Current Layer name", default=False)
     cameraName:     BoolProperty(
         name="", description="Active camera", default=False)
+    collectionName:     BoolProperty(
+        name="", description="Active Collection", default=False)
     customName:     BoolProperty(
         name="", description="Use custom folder", default=False)
     customFolder:   StringProperty(
@@ -200,6 +209,8 @@ class RenderOutputSnippetsProps(bpy.types.PropertyGroup):
         name="", description="Current Layer name", default=False)
     fcameraName:     BoolProperty(
         name="", description="Active camera", default=False)
+    fcollectionName:     BoolProperty(
+        name="", description="Active Collection", default=False)
     fcustomName:     BoolProperty(
         name="", description="Use custom file name", default=False)
     fseparatorEnd:     BoolProperty(
