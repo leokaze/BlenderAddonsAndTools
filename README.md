@@ -51,4 +51,8 @@ In this section I put diferentes tools for manage keys and fcurves, this first v
 
 This tools have three icons on Dope sheet's header and Graph editor's header for fast filter 'Location', 'Rotation' and 'Scale'. Also on the right panel in the 'Tools' section there are many buttons for X, Y, Z, W Locations, Rotations and Scales filters.
 
-### Colorize Nodes
+# Colorize Nodes
+
+This tool help in all node trees visualizations, fast colorize any selected node, and fast colorize all inputs and outputs nodes
+
+![image](https://github.com/leokaze/BlenderAddonsAndTools/assets/12009166/de8ac48a-a2a2-4152-a9be-31db0a96992a)
