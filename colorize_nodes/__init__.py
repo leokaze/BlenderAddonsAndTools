@@ -12,8 +12,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import bpy
-from bpy.types import Panel, Operator, PropertyGroup
+from bpy.types import Panel, Operator, PropertyGroup, AddonPreferences
 from bpy.props import FloatVectorProperty
+from . preferences import ColorizeNodePreferences
 
 bl_info = {
     "name" : "Colorize Nodes",
@@ -66,6 +67,8 @@ default_colors = {
     }
 }
 
+
+
 class NodeColorsProps(PropertyGroup):
     color_1: FloatVectorProperty(
         name=default_colors["color_1"]["name"],
@@ -74,7 +77,7 @@ class NodeColorsProps(PropertyGroup):
         min=0.0,
         max=1.0,
         default=hex_to_rgb(default_colors["color_1"]["hex"])
-    )
+    ) # type: ignore
     color_2: FloatVectorProperty(
         name=default_colors["color_2"]["name"],
         subtype='COLOR',
@@ -82,7 +85,7 @@ class NodeColorsProps(PropertyGroup):
         min=0.0,
         max=1.0,
         default=hex_to_rgb(default_colors["color_2"]["hex"])
-    )
+    ) # type: ignore
     color_3: FloatVectorProperty(
         name=default_colors["color_3"]["name"],
         subtype='COLOR',
@@ -90,7 +93,7 @@ class NodeColorsProps(PropertyGroup):
         min=0.0,
         max=1.0,
         default=hex_to_rgb(default_colors["color_3"]["hex"])
-    )
+    ) # type: ignore
     color_4: FloatVectorProperty(
         name=default_colors["color_4"]["name"],
         subtype='COLOR',
@@ -98,7 +101,7 @@ class NodeColorsProps(PropertyGroup):
         min=0.0,
         max=1.0,
         default=hex_to_rgb(default_colors["color_4"]["hex"])
-    )
+    ) # type: ignore
     color_5: FloatVectorProperty(
         name=default_colors["color_5"]["name"],
         subtype='COLOR',
@@ -106,7 +109,7 @@ class NodeColorsProps(PropertyGroup):
         min=0.0,
         max=1.0,
         default=hex_to_rgb(default_colors["color_5"]["hex"])
-    )
+    ) # type: ignore
     color_positive: FloatVectorProperty(
         name=default_colors["color_positive"]["name"],
         subtype='COLOR',
@@ -114,7 +117,7 @@ class NodeColorsProps(PropertyGroup):
         min=0.0,
         max=1.0,
         default=hex_to_rgb(default_colors["color_positive"]["hex"])
-    )
+    ) # type: ignore
     color_negative: FloatVectorProperty(
         name=default_colors["color_negative"]["name"],
         subtype='COLOR',
@@ -122,7 +125,7 @@ class NodeColorsProps(PropertyGroup):
         min=0.0,
         max=1.0,
         default=hex_to_rgb(default_colors["color_negative"]["hex"])
-    )
+    ) # type: ignore
 
 class ColorizeInputAndOutputNodes(Operator):
     bl_idname = "colorize_nodes.colorize_input_output_nodes"
@@ -159,7 +162,7 @@ class ColorizeSelectedNodes(Operator):
         min=0.0,
         max=1.0,
         default=(1.0, 0.0, 0.0)
-    )
+    ) # type: ignore
 
     def execute(self, context):
         active_node = context.active_node
@@ -202,12 +205,14 @@ def register():
     bpy.utils.register_class(ColorizeInputAndOutputNodes)
     bpy.utils.register_class(ColorizeSelectedNodes)
     bpy.utils.register_class(ColorizeNodesPanel)
+    bpy.utils.register_class(ColorizeNodePreferences)
 
 def unregister():
     bpy.utils.unregister_class(NodeColorsProps)
     bpy.utils.unregister_class(ColorizeInputAndOutputNodes)
     bpy.utils.unregister_class(ColorizeSelectedNodes)
     bpy.utils.unregister_class(ColorizeNodesPanel)
+    bpy.utils.unregister_class(ColorizeNodePreferences)
 
 
 if __name__ == "__main__":
