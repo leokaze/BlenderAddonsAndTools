@@ -12,8 +12,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import bpy
-from bpy.types import Panel, Operator
-from bpy.props import StringProperty, FloatVectorProperty
+from bpy.types import Panel, Operator, PropertyGroup
+from bpy.props import FloatVectorProperty
 
 bl_info = {
     "name" : "Colorize Nodes",
@@ -35,7 +35,6 @@ def hex_to_rgb(hex_color):
     # convert hexadecimal color without # string to rgb tuple with values between 0 and 1
     return tuple(int(hex_color[i:i+2], 16) / 255 for i in (0, 2, 4))
 
-# default_colors = {"Amber":"ffbe0b","Orange (Pantone)":"fb5607","Rose":"ff006e","Blue Violet":"8338ec","Azure":"3a86ff"}
 default_colors = {
     "color_1" : {
         "name" : "Amber",
@@ -67,7 +66,7 @@ default_colors = {
     }
 }
 
-class NodeColorsProps(bpy.types.PropertyGroup):
+class NodeColorsProps(PropertyGroup):
     color_1: FloatVectorProperty(
         name=default_colors["color_1"]["name"],
         subtype='COLOR',
@@ -140,7 +139,7 @@ class ColorizeInputAndOutputNodes(Operator):
             return {'CANCELLED'}
         else:
             for node in active_node.id_data.nodes:
-                if node.type == 'GROUP_OUTPUT':
+                if node.type == 'GROUP_OUTPUT' or node.type == 'OUTPUT_MATERIAL' or node.type == 'COMPOSITE' or node.type == 'OUTPUT_WORLD':
                     ColorizeNode(node, output_color)
                 elif node.type == 'GROUP_INPUT':
                     ColorizeNode(node, input_color)
@@ -176,7 +175,7 @@ class ColorizeSelectedNodes(Operator):
         self.report({'INFO'}, "Colorize Selected Nodes")
         return {'FINISHED'}
 
-class ColorizeNodesPanel(bpy.types.Panel):
+class ColorizeNodesPanel(Panel):
     bl_idname = "COLOR_PT_colorize_nodes"
     bl_label = "Colorize Nodes"
     bl_space_type = 'NODE_EDITOR'

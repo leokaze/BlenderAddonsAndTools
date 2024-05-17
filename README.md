@@ -50,3 +50,5 @@ In this section I put diferentes tools for manage keys and fcurves, this first v
 ### Fast Filter
 
 This tools have three icons on Dope sheet's header and Graph editor's header for fast filter 'Location', 'Rotation' and 'Scale'. Also on the right panel in the 'Tools' section there are many buttons for X, Y, Z, W Locations, Rotations and Scales filters.
+
+### Colorize Nodes
