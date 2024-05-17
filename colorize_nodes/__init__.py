@@ -21,9 +21,9 @@ bl_info = {
     "description" : "",
     "blender" : (4, 1, 1),
     "version" : (0, 0, 1),
-    "location" : "",
+    "location" : "Node Editor > Sidebar > Node",
     "warning" : "",
-    "category" : "Generic"
+    "category" : "Node"
 }
 
 
