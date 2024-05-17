@@ -7,7 +7,7 @@ def hex_to_rgb(hex_color):
     # convert hexadecimal color without # string to rgb tuple with values between 0 and 1
     return tuple(int(hex_color[i:i+2], 16) / 255 for i in (0, 2, 4))
 
-default_colors = {
+DEFAULT_COLORS = {
     "color_1" : {
         "hex" : "ffbe0b"
     },
@@ -15,7 +15,7 @@ default_colors = {
         "hex" : "fb5607"
     },
     "color_3" : {
-        "hex" : "EFBDEB"
+        "hex" : "297373"
     },
     "color_4" : {
         "hex" : "8338ec"
@@ -47,7 +47,7 @@ class ColorizeNodePreferences(AddonPreferences):
         size=3,
         min=0.0,
         max=1.0,
-        default=hex_to_rgb(default_colors["color_1"]["hex"])
+        default=hex_to_rgb(DEFAULT_COLORS["color_1"]["hex"])
     ) # type: ignore
     color_2: FloatVectorProperty(
         name="Color 2",
@@ -55,7 +55,7 @@ class ColorizeNodePreferences(AddonPreferences):
         size=3,
         min=0.0,
         max=1.0,
-        default=hex_to_rgb(default_colors["color_2"]["hex"])
+        default=hex_to_rgb(DEFAULT_COLORS["color_2"]["hex"])
     ) # type: ignore
     color_3: FloatVectorProperty(
         name ="Color 3",
@@ -63,7 +63,7 @@ class ColorizeNodePreferences(AddonPreferences):
         size=3,
         min=0.0,
         max=1.0,
-        default=hex_to_rgb(default_colors["color_3"]["hex"])
+        default=hex_to_rgb(DEFAULT_COLORS["color_3"]["hex"])
     ) # type: ignore
     color_4: FloatVectorProperty(
         name="Color 4",
@@ -71,7 +71,7 @@ class ColorizeNodePreferences(AddonPreferences):
         size=3,
         min=0.0,
         max=1.0,
-        default=hex_to_rgb(default_colors["color_4"]["hex"])
+        default=hex_to_rgb(DEFAULT_COLORS["color_4"]["hex"])
     ) # type: ignore
     color_5: FloatVectorProperty(
         name="Color 5",
@@ -79,7 +79,7 @@ class ColorizeNodePreferences(AddonPreferences):
         size=3,
         min=0.0,
         max=1.0,
-        default=hex_to_rgb(default_colors["color_5"]["hex"])
+        default=hex_to_rgb(DEFAULT_COLORS["color_5"]["hex"])
     ) # type: ignore
     color_positive: FloatVectorProperty(
         name="Positive",
@@ -87,7 +87,7 @@ class ColorizeNodePreferences(AddonPreferences):
         size=3,
         min=0.0,
         max=1.0,
-        default=hex_to_rgb(default_colors["color_positive"]["hex"])
+        default=hex_to_rgb(DEFAULT_COLORS["color_positive"]["hex"])
     ) # type: ignore
     color_negative: FloatVectorProperty(
         name="Negative",
@@ -95,7 +95,7 @@ class ColorizeNodePreferences(AddonPreferences):
         size=3,
         min=0.0,
         max=1.0,
-        default=hex_to_rgb(default_colors["color_negative"]["hex"])
+        default=hex_to_rgb(DEFAULT_COLORS["color_negative"]["hex"])
     ) # type: ignore
     color_outputs: FloatVectorProperty(
         name="Outputs",
@@ -103,7 +103,7 @@ class ColorizeNodePreferences(AddonPreferences):
         size=3,
         min=0.0,
         max=1.0,
-        default=hex_to_rgb(default_colors["color_outputs"]["hex"])
+        default=hex_to_rgb(DEFAULT_COLORS["color_outputs"]["hex"])
     ) # type: ignore
     color_inputs: FloatVectorProperty(
         name="Inputs",
@@ -111,13 +111,32 @@ class ColorizeNodePreferences(AddonPreferences):
         size=3,
         min=0.0,
         max=1.0,
-        default=hex_to_rgb(default_colors["color_inputs"]["hex"])
+        default=hex_to_rgb(DEFAULT_COLORS["color_inputs"]["hex"])
     ) # type: ignore
 
     def draw(self, context):
         layout = self.layout
         
         col = layout.column()
-        for key in default_colors.keys():
+        for key in DEFAULT_COLORS.keys():
             row = col.row()
             row.prop(self, key, text=key)
+
+        col = layout.column()
+        col.operator("colorize_nodes.reset_default_colors", icon='X')
+
+
+class ColorizeNodesResetDefaultColorsOp(Operator):
+    bl_idname = "colorize_nodes.reset_default_colors"
+    bl_label = "Reset Default Colors"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        preferences = context.preferences
+        color_preferences = preferences.addons[__package__].preferences
+
+        for key, value in DEFAULT_COLORS.items():
+            setattr(color_preferences, key, hex_to_rgb(value["hex"]))
+
+        self.report({'INFO'}, "Reset Default Colors")
+        return {'FINISHED'}

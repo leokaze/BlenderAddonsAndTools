@@ -14,7 +14,7 @@
 import bpy
 from bpy.types import Panel, Operator, PropertyGroup, AddonPreferences
 from bpy.props import FloatVectorProperty
-from . preferences import ColorizeNodePreferences
+from . preferences import ColorizeNodePreferences, DEFAULT_COLORS, ColorizeNodesResetDefaultColorsOp
 
 bl_info = {
     "name" : "Colorize Nodes",
@@ -32,100 +32,23 @@ def ColorizeNode(node, color):
     node.use_custom_color = True
     node.color = color
 
-def hex_to_rgb(hex_color):
-    # convert hexadecimal color without # string to rgb tuple with values between 0 and 1
-    return tuple(int(hex_color[i:i+2], 16) / 255 for i in (0, 2, 4))
+class ColorizeResetColor(Operator):
+    bl_idname = "colorize_nodes.reset_color"
+    bl_label = "Reset Colors"
+    bl_options = {'REGISTER', 'UNDO'}
 
-default_colors = {
-    "color_1" : {
-        "name" : "Amber",
-        "hex" : "ffbe0b"
-    },
-    "color_2" : {
-        "name" : "Orange (Pantone)",
-        "hex" : "fb5607"
-    },
-    "color_3" : {
-        "name" : "Rose",
-        "hex" : "ff006e"
-    },
-    "color_4" : {
-        "name" : "Blue Violet",
-        "hex" : "8338ec"
-    },
-    "color_5" : {
-        "name" : "Azure",
-        "hex" : "3a86ff"
-    }, 
-    "color_positive": {
-        "name": "Positive",
-        "hex": "2ecc71"
-    },
-    "color_negative": {
-        "name": "Negative",
-        "hex": "e74c3c"
-    }
-}
+    def execute(self, context):
+        active_node = context.active_node
+        if active_node is None:
+            self.report({'ERROR'}, "No node selected")
+            return {'CANCELLED'}
+        else:
+            for node in context.selected_nodes:
+                node.color = (0.608, 0.608, 0.608)
+                node.use_custom_color = False
 
-
-
-class NodeColorsProps(PropertyGroup):
-    color_1: FloatVectorProperty(
-        name=default_colors["color_1"]["name"],
-        subtype='COLOR',
-        size=3,
-        min=0.0,
-        max=1.0,
-        default=hex_to_rgb(default_colors["color_1"]["hex"])
-    ) # type: ignore
-    color_2: FloatVectorProperty(
-        name=default_colors["color_2"]["name"],
-        subtype='COLOR',
-        size=3,
-        min=0.0,
-        max=1.0,
-        default=hex_to_rgb(default_colors["color_2"]["hex"])
-    ) # type: ignore
-    color_3: FloatVectorProperty(
-        name=default_colors["color_3"]["name"],
-        subtype='COLOR',
-        size=3,
-        min=0.0,
-        max=1.0,
-        default=hex_to_rgb(default_colors["color_3"]["hex"])
-    ) # type: ignore
-    color_4: FloatVectorProperty(
-        name=default_colors["color_4"]["name"],
-        subtype='COLOR',
-        size=3,
-        min=0.0,
-        max=1.0,
-        default=hex_to_rgb(default_colors["color_4"]["hex"])
-    ) # type: ignore
-    color_5: FloatVectorProperty(
-        name=default_colors["color_5"]["name"],
-        subtype='COLOR',
-        size=3,
-        min=0.0,
-        max=1.0,
-        default=hex_to_rgb(default_colors["color_5"]["hex"])
-    ) # type: ignore
-    color_positive: FloatVectorProperty(
-        name=default_colors["color_positive"]["name"],
-        subtype='COLOR',
-        size=3,
-        min=0.0,
-        max=1.0,
-        default=hex_to_rgb(default_colors["color_positive"]["hex"])
-    ) # type: ignore
-    color_negative: FloatVectorProperty(
-        name=default_colors["color_negative"]["name"],
-        subtype='COLOR',
-        size=3,
-        min=0.0,
-        max=1.0,
-        default=hex_to_rgb(default_colors["color_negative"]["hex"])
-    ) # type: ignore
+        self.report({'INFO'}, "Reset Color")
+        return {'FINISHED'}
 
 class ColorizeInputAndOutputNodes(Operator):
     bl_idname = "colorize_nodes.colorize_input_output_nodes"
@@ -133,9 +56,8 @@ class ColorizeInputAndOutputNodes(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        props = context.scene.node_colors_props
-        input_color = props.color_4
-        output_color = props.color_negative
+        preferences = context.preferences
+        color_preferences = preferences.addons[__package__].preferences
         active_node = context.active_node
         if active_node is None:
             self.report({'ERROR'}, "Select any node first")
@@ -143,9 +65,9 @@ class ColorizeInputAndOutputNodes(Operator):
         else:
             for node in active_node.id_data.nodes:
                 if node.type == 'GROUP_OUTPUT' or node.type == 'OUTPUT_MATERIAL' or node.type == 'COMPOSITE' or node.type == 'OUTPUT_WORLD':
-                    ColorizeNode(node, output_color)
+                    ColorizeNode(node, color_preferences.color_outputs)
                 elif node.type == 'GROUP_INPUT':
-                    ColorizeNode(node, input_color)
+                    ColorizeNode(node, color_preferences.color_inputs)
 
         self.report({'INFO'}, "Colorize Input and Output Nodes")
         return {'FINISHED'}
@@ -186,30 +108,36 @@ class ColorizeNodesPanel(Panel):
     bl_category = 'Node'
 
     def draw(self, context):
-        props = context.scene.node_colors_props
+        preferences = context.preferences
+        color_preferences = preferences.addons[__package__].preferences
+
         layout = self.layout
 
         col = layout.column(align=True)
-        for key in default_colors.keys():
+        for key in DEFAULT_COLORS.keys():
             row = col.row(align=True)
-            row.prop(props, key, text="")
-            row.operator("colorize_nodes.colorize_selected_nodes", text="", icon='COLOR').color = getattr(props, key)
+            # row.prop(props, key, text="")
+            # row.operator("colorize_nodes.colorize_selected_nodes", text="", icon='COLOR').color = getattr(props, key)
+            row.prop(color_preferences, key, text="")
+            row.operator("colorize_nodes.colorize_selected_nodes", text="", icon='COLOR').color = getattr(color_preferences, key)
 
         col = layout.column(align=True)
         col.operator("colorize_nodes.colorize_input_output_nodes", icon='COLOR')
+        col.operator("colorize_nodes.reset_color", icon='X')
 
 
 def register():
-    bpy.utils.register_class(NodeColorsProps)
-    bpy.types.Scene.node_colors_props = bpy.props.PointerProperty(type=NodeColorsProps)
     bpy.utils.register_class(ColorizeInputAndOutputNodes)
+    bpy.utils.register_class(ColorizeResetColor)
+    bpy.utils.register_class(ColorizeNodesResetDefaultColorsOp)
     bpy.utils.register_class(ColorizeSelectedNodes)
     bpy.utils.register_class(ColorizeNodesPanel)
     bpy.utils.register_class(ColorizeNodePreferences)
 
 def unregister():
-    bpy.utils.unregister_class(NodeColorsProps)
     bpy.utils.unregister_class(ColorizeInputAndOutputNodes)
+    bpy.utils.unregister_class(ColorizeResetColor)
+    bpy.utils.unregister_class(ColorizeNodesResetDefaultColorsOp)
     bpy.utils.unregister_class(ColorizeSelectedNodes)
     bpy.utils.unregister_class(ColorizeNodesPanel)
     bpy.utils.unregister_class(ColorizeNodePreferences)
