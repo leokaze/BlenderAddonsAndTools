@@ -14,7 +14,7 @@ bl_info = {
 class FastFilterFCurvesOP(bpy.types.Operator):
   bl_idname = "fastfilter.fcurves_filter"
   bl_label = "Fast Filter Fcurves"
-  bl_description = "Tool for fast filter on fcurves"
+  bl_description = "MMB to filter and frame all keys of the filter.\nAlt + MMB to filter only"
   bl_options = {"REGISTER"}
 
   filtro: bpy.props.StringProperty(name="filtro", default="")
@@ -23,9 +23,12 @@ class FastFilterFCurvesOP(bpy.types.Operator):
   def poll(cls, context):
     return True
 
-  def execute(self, context):
+  def invoke(self, context, event):
     bpy.context.space_data.dopesheet.filter_text = self.filtro
-    if context.area.type == 'GRAPH_EDITOR':
+    # verify if alt key is pressed
+    if event.alt:
+      return {"FINISHED"}
+    elif context.area.type == 'GRAPH_EDITOR':
       bpy.ops.graph.view_all()
     return {"FINISHED"}
   
