@@ -72,6 +72,25 @@ class ColorizeInputAndOutputNodes(Operator):
         self.report({'INFO'}, "Colorize Input and Output Nodes")
         return {'FINISHED'}
     
+class HideUnusedSocketsOfInputNodes(Operator):
+    bl_idname = "colorize_nodes.hide_unused_sockets_of_input_nodes"
+    bl_label = "Hide Unused Sockets of Input Nodes"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        active_node = context.active_node
+        if active_node is None:
+            self.report({'ERROR'}, "Select any node first")
+            return {'CANCELLED'}
+        else:
+            for node in active_node.id_data.nodes:
+                if node.type == 'GROUP_INPUT':
+                    for socket in node.outputs:
+                        socket.hide = True
+
+        self.report({'INFO'}, "Hide Unused Sockets of Input Nodes")
+        return {'FINISHED'}
+    
 class ColorizeSelectedNodes(Operator):
     bl_idname = "colorize_nodes.colorize_selected_nodes"
     bl_label = "Colorize Selected Nodes"
@@ -122,8 +141,9 @@ class ColorizeNodesPanel(Panel):
             row.operator("colorize_nodes.colorize_selected_nodes", text="", icon='COLOR').color = getattr(color_preferences, key)
 
         col = layout.column(align=True)
-        col.operator("colorize_nodes.colorize_input_output_nodes", icon='COLOR')
+        col.operator("colorize_nodes.colorize_input_output_nodes", icon='COLOR', text="Colorize Input and Output")
         col.operator("colorize_nodes.reset_color", icon='X')
+        col.operator("colorize_nodes.hide_unused_sockets_of_input_nodes", icon='HIDE_OFF', text="Hide Inputs Sockets")
 
 
 def register():
@@ -133,6 +153,7 @@ def register():
     bpy.utils.register_class(ColorizeSelectedNodes)
     bpy.utils.register_class(ColorizeNodesPanel)
     bpy.utils.register_class(ColorizeNodePreferences)
+    bpy.utils.register_class(HideUnusedSocketsOfInputNodes)
 
 def unregister():
     bpy.utils.unregister_class(ColorizeInputAndOutputNodes)
@@ -141,6 +162,7 @@ def unregister():
     bpy.utils.unregister_class(ColorizeSelectedNodes)
     bpy.utils.unregister_class(ColorizeNodesPanel)
     bpy.utils.unregister_class(ColorizeNodePreferences)
+    bpy.utils.unregister_class(HideUnusedSocketsOfInputNodes)
 
 
 if __name__ == "__main__":
