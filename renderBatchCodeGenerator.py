@@ -7,7 +7,7 @@ bl_info = {
   "name": "Render Batch Code Generator",
   "description": "Create file for render or copy de current project to batch code and send it to clipboard",
   "author": "leokaze",
-  "version": (0, 0, 3),
+  "version": (0, 0, 4),
   "blender": (3, 0, 0),
   "location": "Output Properties > Batch Code",
   "warning": "This addon is still in development. Is needed install pyperclip on on current blender python folder",
@@ -33,12 +33,12 @@ class RenderBatchCodeProps(bpy.types.PropertyGroup):
   includeStart: BoolProperty(
     name="Set start frame",
     description="Include start frame on code",
-    default=False
+    default=True
   )
   includeEnd: BoolProperty(
     name="Set end frame",
     description="Include end frame on batch code",
-    default=False
+    default=True
   )
   includeSound: BoolProperty(
     name="Use sound",
@@ -60,16 +60,6 @@ class RenderBatchCodeProps(bpy.types.PropertyGroup):
     description="Append the new code to existing render.bat file",
     default=True
   )
-  startFrame: StringProperty(
-    name="Start frame",
-    description="Start frame to render",
-    default="1"
-  )
-  endFrame: StringProperty(
-    name="End frame",
-    description="Set de end frame to render",
-    default="250"
-  )
   frames: StringProperty(
     name="Frames to render",
     description="Set the frames to render if animation is not seted, separated by commas(no spaces). User .. to range frames",
@@ -90,55 +80,64 @@ class RenderBatchCodeProps(bpy.types.PropertyGroup):
     maxlen=1024,
   )
   
-def GetBatchCode(context):
-  props = context.scene.render_batch_code_generator_props
+def GetBatchCode(context, customProps = None):
+  props = {}
+  if customProps is None:
+    p = context.scene.render_batch_code_generator_props
+    props = {
+      "renderScene": p.renderScene,
+      "renderAnimation": p.renderAnimation,
+      "includeOutput": p.includeOutput,
+      "includeStart": p.includeStart,
+      "includeEnd": p.includeEnd,
+      "includeSound": p.includeSound,
+      "includeShutdown": p.includeShutdown,
+      "dontClose": p.dontClose,
+      "appendCode": p.appendCode,
+      "frames": p.frames,
+      "soundPath": p.soundPath,
+      "vlcPath": p.vlcPath
+    }
+  else:
+    props = customProps
 
   blender = bpy.app.binary_path
   currentProyect = bpy.data.filepath
+  file_name = os.path.basename(currentProyect)
 
-  batchCode = "\"" + blender + "\" --background \"" + currentProyect + "\""
-  if(props.includeOutput):
-    batchCode += " --render-output \"" + bpy.context.scene.render.filepath + "\""
-  if(props.renderScene):
-    batchCode += " --scene \"" + bpy.context.scene.name + "\""
-  if(props.renderAnimation):
-    if(props.includeStart):
-      batchCode += " --frame-start " + props.startFrame
-    if(props.includeEnd):
-      batchCode += " --frame-end " + props.endFrame
-    batchCode += " --render-anim"
-  else:
-    batchCode += " --render-frame " + props.frames
+  args = {
+    "blender": blender,
+    "background": "--background",
+    "file": currentProyect,
+    "render_anim": True,
+    "scene": context.scene.name if customProps is None else customProps['scene_name'],
+    "frame_start": context.scene.frame_start if customProps is None else customProps['frame_start'],
+    "frame_end": context.scene.frame_end if customProps is None else customProps['frame_end'],
+    "render_output": context.scene.render.filepath if customProps is None else customProps['file_output'],
+  }
 
-  if(props.includeSound):
-    batchCode += "\n\"" + props.vlcPath + "\" --play-and-exit \"" + props.soundPath + "\""
+  batchCode = ""
+  batchCode += "echo off\n"
+  batchCode += "echo ********************************************************************************\n"
+  batchCode += f"echo *************START RENDERING OF {file_name} SCENE: {args['scene']}**********\n"
+  batchCode += "echo ********************************************************************************\n"
+  batchCode += f"\"{args['blender']}\""
+  batchCode += f" {args['background']}"
+  batchCode += f" \"{args['file']}\""
+  batchCode += f" --scene {args['scene']}" if props['renderScene'] else ""
+  batchCode += f" --render-output \"{args['render_output']}\"" if props['includeOutput'] else ""
+  batchCode += f" --frame-start {args['frame_start']}" if props['renderAnimation'] and props['includeStart'] else ""
+  batchCode += f" --frame-end {args['frame_end']}" if props['renderAnimation'] and props['includeEnd'] else ""
+  batchCode += f" --render-anim" if props['renderAnimation'] else f"  --render-frame {props['frames']}"
+  batchCode += f" \n\"{props['vlcPath']}\" --play-and-exit \"{props['soundPath']}\"" if props['includeSound'] else ""
+  batchCode += "\necho ********************************************************************************\n"
+  batchCode += f"echo ********************END RENDERING OF {file_name} SCENE: {args['scene']}********************\n"
+  batchCode += "echo ********************************************************************************\n"
+  batchCode += f"\nshutdown /s" if props['includeShutdown'] else ""
+  batchCode += f"\npause" if props['dontClose'] else ""
 
-  if(props.includeShutdown):
-    batchCode += "\n\nshutdown \\s"
-
-  if(props.dontClose):
-    batchCode += "\n\npause"
-
-  batchCode += "\n\n---------------------------------------\n\n"
-
-
-  print(batchCode)
   return batchCode
 
-class CopyProjectBatchCodeOperator(bpy.types.Operator):
-  bl_idname = "copy_batch.copy_project_batch_code_operator"
-  bl_label = "Copy Batch Code"
-  bl_description = "Send to clipboard de current projecto on batch code"
-  bl_options = {"REGISTER"}
-
-  @classmethod
-  def poll(cls, context):
-    return True
-
-  def execute(self, context):
-    code = GetBatchCode(context)
-    self.report({'INFO'}, "No longer available!")
-    return {"FINISHED"}
 
 class SaveRenderBatchFileOperator(bpy.types.Operator):
   bl_idname = "save_batch_file.save_render_batch_file_operator"
@@ -146,15 +145,63 @@ class SaveRenderBatchFileOperator(bpy.types.Operator):
   bl_description = "Save current project to render.bat file"
   bl_options = {"REGISTER"}
 
+  render_all: BoolProperty(
+    name="Render All",
+    description="Render all frames",
+    default=False
+  )
+
   @classmethod
   def poll(cls, context):
     return True
 
   def execute(self, context):
+
+    # return if the file is not saved
+    if not bpy.data.filepath:
+      self.report({'WARNING'}, "Save your project first")
+      return {"CANCELLED"}
+
     props = context.scene.render_batch_code_generator_props
-    path = "NOT_SAVED!!!"
-    if(len(bpy.data.filepath) > 3):
-      path = os.path.dirname(bpy.data.filepath) + "\\render.bat"
+    path = os.path.dirname(bpy.data.filepath) + "\\render.bat"
+
+    customProps = []
+    if(self.render_all):
+      for scene in bpy.data.scenes:
+        customProps.append({
+          "renderScene": True,
+          "scene_name": scene.name,
+          "renderAnimation": True,
+          "includeOutput": True,
+          "file_output": scene.render.filepath,
+          "includeStart": True,
+          "frame_start": scene.frame_start,
+          "includeEnd": True,
+          "frame_end": scene.frame_end,
+          "includeSound": props.includeSound,
+          "includeShutdown": False,
+          "dontClose": False,
+          "appendCode": True,
+          "frames": "0",
+          "soundPath": props.soundPath,
+          "vlcPath": props.vlcPath
+        })
+      with open(path, "w") as file:
+        # for p in customProps:
+        #   file.write(GetBatchCode(context, p))
+        for p, index in zip(customProps, range(len(customProps))):
+          file.write(GetBatchCode(context, p))
+          if(index < len(customProps) - 1):
+            file.write("\n")
+          if(index == len(customProps) - 1):
+            if(props.includeShutdown):
+              file.write("\nshutdown /s")
+            if(props.dontClose):
+              file.write("\npause")
+      file.close()
+      self.report({'INFO'}, "All scenes in render.bat is saved")
+
+    else:
       if(props.appendCode):
         with open(path, "a") as file:
           file.write(GetBatchCode(context))
@@ -164,8 +211,6 @@ class SaveRenderBatchFileOperator(bpy.types.Operator):
           file.write(GetBatchCode(context))
         file.close()
       self.report({'INFO'}, "render.bat is saved")
-    else:
-      self.report({'WARNING'}, "Current proyect is not saved!!!")
     # print(path)
     return {"FINISHED"}
 
@@ -189,10 +234,6 @@ class CopyBatchCodePanel(bpy.types.Panel):
     col.prop(props, "includeStart")
     col.prop(props, "includeEnd")
 
-    row = layout.row()
-    row.prop(props, "startFrame")
-    row.prop(props, "endFrame")
-
     col = layout.column()
     col.prop(props, "frames")
 
@@ -205,19 +246,17 @@ class CopyBatchCodePanel(bpy.types.Panel):
     
     col = layout.column()
     col.prop(props, "appendCode")
-    col.operator("copy_batch.copy_project_batch_code_operator", text="Copy to clipboard")
-    col.operator("save_batch_file.save_render_batch_file_operator", text="Save render.bat")
+    col.operator("save_batch_file.save_render_batch_file_operator", text="Save render.bat").render_all = False
+    col.operator("save_batch_file.save_render_batch_file_operator", text="Save all scenes").render_all = True
 
 def register():
   bpy.utils.register_class(RenderBatchCodeProps)
   bpy.types.Scene.render_batch_code_generator_props = PointerProperty(type=RenderBatchCodeProps)
-  bpy.utils.register_class(CopyProjectBatchCodeOperator)
   bpy.utils.register_class(SaveRenderBatchFileOperator)
   bpy.utils.register_class(CopyBatchCodePanel)
 
 def unregister():
   bpy.utils.unregister_class(RenderBatchCodeProps)
-  bpy.utils.unregister_class(CopyProjectBatchCodeOperator)
   bpy.utils.unregister_class(SaveRenderBatchFileOperator)
   bpy.utils.unregister_class(CopyBatchCodePanel)
 

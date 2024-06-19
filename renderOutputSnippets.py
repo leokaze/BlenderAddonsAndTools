@@ -6,7 +6,7 @@ import bpy
 bl_info = {
     "name": "Render Output Snippets",
     "author": "leokaze",
-    "version": (0, 4),
+    "version": (0, 5),
     "blender": (3, 0, 0),
     "location": "Output Properties > Render Output Snippets",
     "description": "Set output render path to varios snippets predefined",
@@ -58,7 +58,7 @@ def GetPath(context):
     if(props.collectionName):
         renderPath += "\\" + activeCollectionName
     if(props.customName):
-        renderPath += "\\" + props.customFolder
+        renderPath += "_" + props.customFolder
 
     if(props.ffileName):
         renderName = fileName
@@ -145,7 +145,7 @@ class RenderOutputSnippetsPanel(bpy.types.Panel):
         col.prop(props, 'layerName', text='Layer Name')
         col.prop(props, 'cameraName', text='Active Camera Name')
         col.prop(props, 'collectionName', text='Active Collection Name')
-        col.prop(props, 'customName', text='Custom Folder')
+        col.prop(props, 'customName', text='Custom Sufix Folder')
 
         col = layout.column(align=True, heading="File Name to use")
         col.prop(props, 'ffileName', text='File Name')

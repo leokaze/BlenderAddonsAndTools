@@ -32,6 +32,11 @@ class OBJECT_PT_copy_objects_names_to_data(Panel):
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_context = "data"
+
+    # class method to disable on EMPTY objects
+    @classmethod
+    def poll(cls, context):
+        return context.active_object is not None and context.active_object.type != 'EMPTY'
     
     def draw(self, context):
         layout = self.layout
