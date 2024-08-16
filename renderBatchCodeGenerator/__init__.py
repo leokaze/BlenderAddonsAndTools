@@ -7,7 +7,7 @@ bl_info = {
   "name": "Render Batch Code Generator",
   "description": "Create file for render or copy de current project to batch code and send it to clipboard",
   "author": "leokaze",
-  "version": (0, 0, 4),
+  "version": (0, 1, 0),
   "blender": (3, 0, 0),
   "location": "Output Properties > Batch Code",
   "warning": "This addon is still in development. Is needed install pyperclip on on current blender python folder",
@@ -213,6 +213,70 @@ class SaveRenderBatchFileOperator(bpy.types.Operator):
       self.report({'INFO'}, "render.bat is saved")
     # print(path)
     return {"FINISHED"}
+  
+class SaveRenderPythonFileOperator(bpy.types.Operator):
+  bl_idname = "save_batch_file.save_render_python_file_operator"
+  bl_label = "Save render.py file"
+  bl_description = "Save current project to render.py file"
+  bl_options = {"REGISTER"}
+
+  @classmethod
+  def poll(cls, context):
+    return True
+
+  def execute(self, context):
+    # return if the file is not saved
+    if not bpy.data.filepath:
+      self.report({'WARNING'}, "Save your project first")
+      return {"CANCELLED"}
+    
+    print("********************")
+
+    python_code = ""
+    python_code += "from renderer import render_animation\n\n"
+    python_code += 'print("*********************************")\n'
+    python_code += 'print("********* START RENDERER ********")\n'
+    python_code += 'print("*********************************")\n\n'
+
+
+    output_path = bpy.context.scene.render.filepath
+    output_path = bpy.path.abspath(output_path)
+    output_path_split = output_path.split("\\")
+    output_path = "\\".join(output_path_split[:-1])
+
+    python_code += "output_path = r'" + output_path + "'\n"
+    python_code += "blender_path = r'\"" + bpy.app.binary_path + "\"'\n"
+    python_code += "blender_file = r'\"" + bpy.data.filepath + "\"'\n"
+    python_code += "start_frame = " + str(bpy.context.scene.frame_start) + "\n"
+    python_code += "end_frame = " + str(bpy.context.scene.frame_end) + "\n\n"
+
+    python_code += "engine = '" + bpy.context.scene.render.engine + "'\n"
+
+    python_code += "render_animation(start_frame, end_frame, output_path, blender_path, blender_file, engine, wait_time=5)\n\n"
+
+    python_code += 'print("*********************************")\n'
+    python_code += 'print("********* END RENDERER ********")\n'
+    python_code += 'print("*********************************")\n\n'
+
+    render_py_path = os.path.dirname(bpy.data.filepath) + "\\render.py"
+    with open(render_py_path, "w") as file:
+      file.write(python_code)
+    file.close()
+
+
+    # copy renderer.py to the same folder of blender file
+    project_file_path = bpy.data.filepath
+    project_file_path_split = project_file_path.split("\\")
+    renderer_copy_path ='"' + "\\".join(project_file_path_split[:-1]) + "\\renderer.py" + '"'
+    # this is the path of the renderer.py file
+    renderer_path = '"' + os.path.dirname(os.path.realpath(__file__)) + "\\renderer.py" + '"'
+    # copy the renderer.py file to the same folder of the blender file
+    os.system(f"copy {renderer_path} {renderer_copy_path}")
+    
+
+    self.report({'INFO'}, "render.py is saved")
+    return {"FINISHED"}
+
 
 class CopyBatchCodePanel(bpy.types.Panel):
   bl_idname = "RENDER_PT_copy_batch_code_render"
@@ -248,16 +312,19 @@ class CopyBatchCodePanel(bpy.types.Panel):
     col.prop(props, "appendCode")
     col.operator("save_batch_file.save_render_batch_file_operator", text="Save render.bat").render_all = False
     col.operator("save_batch_file.save_render_batch_file_operator", text="Save all scenes").render_all = True
+    col.operator("save_batch_file.save_render_python_file_operator", text="Save render.py")
 
 def register():
   bpy.utils.register_class(RenderBatchCodeProps)
   bpy.types.Scene.render_batch_code_generator_props = PointerProperty(type=RenderBatchCodeProps)
   bpy.utils.register_class(SaveRenderBatchFileOperator)
+  bpy.utils.register_class(SaveRenderPythonFileOperator)
   bpy.utils.register_class(CopyBatchCodePanel)
 
 def unregister():
   bpy.utils.unregister_class(RenderBatchCodeProps)
   bpy.utils.unregister_class(SaveRenderBatchFileOperator)
+  bpy.utils.unregister_class(SaveRenderPythonFileOperator)
   bpy.utils.unregister_class(CopyBatchCodePanel)
 
 if __name__ == "__main__":
