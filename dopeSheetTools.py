@@ -4,7 +4,7 @@ bl_info = {
   "name": "Dope Sheet Tools",
   "description": "Tools to manipulate filters and fcurves",
   "author": "leokaze",
-  "version": (0, 0, 2),
+  "version": (0, 0, 3),
   "blender": (3, 0, 0),
   "location": "Dope Sheet and Graph Editor",
   "warning": "This addon is still in development.",
@@ -14,7 +14,7 @@ bl_info = {
 class FastFilterFCurvesOP(bpy.types.Operator):
   bl_idname = "fastfilter.fcurves_filter"
   bl_label = "Fast Filter Fcurves"
-  bl_description = "MMB to filter and frame all keys of the filter.\nAlt + MMB to filter only"
+  bl_description = "LMB to filter and frame all keys of the filter.\nAlt + LMB to filter only\nShift + LMB to frame selected keys"
   bl_options = {"REGISTER"}
 
   filtro: bpy.props.StringProperty(name="filtro", default="")
@@ -28,6 +28,8 @@ class FastFilterFCurvesOP(bpy.types.Operator):
     # verify if alt key is pressed
     if event.alt:
       return {"FINISHED"}
+    elif event.shift:
+      bpy.ops.graph.view_selected()
     elif context.area.type == 'GRAPH_EDITOR':
       bpy.ops.graph.view_all()
     return {"FINISHED"}
@@ -113,6 +115,11 @@ class PanelDopesheetFastFilterFcurves(bpy.types.Panel):
     row.operator("fastfilter.fcurves_filter", text="X").filtro = "X Scale"
     row.operator("fastfilter.fcurves_filter", text="Y").filtro = "Y Scale"
     row.operator("fastfilter.fcurves_filter", text="Z").filtro = "Z Scale"
+
+    row = layout.row(align=True, heading="IK_FK")
+    row.label(text="IK_FK")
+    row = layout.row(align=True, heading="IK_FK")
+    row.operator("fastfilter.fcurves_filter", text="IK_FK").filtro = "IK_FK"
     
 
 class PanelDopesheetFrameJump(bpy.types.Panel):
@@ -198,6 +205,11 @@ class PanelGraphFastFilterFcurves(bpy.types.Panel):
     row.operator("fastfilter.fcurves_filter", text="X").filtro = "X Scale"
     row.operator("fastfilter.fcurves_filter", text="Y").filtro = "Y Scale"
     row.operator("fastfilter.fcurves_filter", text="Z").filtro = "Z Scale"
+
+    row = layout.row(align=True, heading="IK_FK")
+    row.label(text="IK_FK")
+    row = layout.row(align=True, heading="IK_FK")
+    row.operator("fastfilter.fcurves_filter", text="IK_FK").filtro = "IK_FK"
     
 
 def menu_func(self, context):
